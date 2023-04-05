@@ -40,15 +40,22 @@ def main_menu():
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-        MENU_TEXT = get_font(100).render("MAIN MENU", True, "#ffffff")
-        MENU_RECT = MENU_TEXT.get_rect(center=(640, 200))
+        MENU_TEXT = get_font(150).render("Dragon Ball Maze", True, "#FFFFFF")
+        MENU_RECT = MENU_TEXT.get_rect(center=(640, 120))
 
-        PLAY_BUTTON = Button(image=pygame.image.load("source\imagenes\Play Rect.png"), pos=(640, 350), 
-                            text_input="PLAY", font=get_font(75), base_color="#2F4F4F", hovering_color="#87CEEB")
+        PLAY_BUTTON = Button(image=pygame.image.load("source\imagenes\Play_Rect_3.png"), pos=(300, 600), 
+                            text_input="PLAY", font=get_font(60), base_color="#FFFFFF", hovering_color="#87CEEB")
+        
+        CREDIT_BUTTON = Button(image=pygame.image.load("source\imagenes\Play_Rect_3.png"), pos=(900, 600), 
+                            text_input="CREDITS", font=get_font(60), base_color="#FFFFFF", hovering_color="#87CEEB")
         
         SCREEN.blit(MENU_TEXT, MENU_RECT)
 
         for button in [PLAY_BUTTON]:
+            button.changeColor(MENU_MOUSE_POS)
+            button.update(SCREEN)
+
+        for button in [CREDIT_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(SCREEN)
         
