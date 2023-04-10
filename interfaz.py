@@ -4,6 +4,7 @@ import pygame_gui
 from pygame.locals import *
 from button import Button
 from dropdown import DropDown
+import spritesheet
 
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -21,6 +22,25 @@ width=1200
 height=700
 window_=pygame.display.set_mode((width,height))
 
+#Frieza sprite
+sprite_sheet_image = pygame.image.load("source/imagenes/frieza.png")
+sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
+animation_frames = []
+animation_steps = 4
+for i in range(animation_steps):
+    frame = sprite_sheet.get_image(i, 45, 45, 1.2, (255, 255, 255))
+    animation_frames.append(frame)
+
+#Cell sprite
+cell_sprite_sheet_image = pygame.image.load("source/imagenes/cell.png")
+cell_sprite_sheet = spritesheet.SpriteSheet(cell_sprite_sheet_image)
+cell_animation_frames = []
+cell_animation_steps = 4
+for i in range(cell_animation_steps):
+    cell_frame = cell_sprite_sheet.get_image(i, 40, 65, 1, (255, 255, 255))
+    cell_animation_frames.append(cell_frame)
+
+
 def get_font(size, number): # Returns Press-Start-2P in the desired size
     if(number==1):
         return pygame.font.Font("source\saiyan-sans_font\Saiyan-Sans.ttf", size)
@@ -32,6 +52,12 @@ def get_font(size, number): # Returns Press-Start-2P in the desired size
 
 def play():
     sound.stop()
+
+    #Animation variables
+    frame = 0
+    cell_frame = 0
+    frame_rate = 3
+    last_update = pygame.time.get_ticks()
    
     COLOR_INACTIVE = (135, 206, 235)
     COLOR_ACTIVE = (100, 200, 255)
@@ -64,7 +90,6 @@ def play():
     NO_INFORMADA = ['Amplitud', 'Costo Uniforme', 'Profundidad']
 
     while True:
-    
 
         PLAY_MOUSE_POS = pygame.mouse.get_pos()
 
@@ -139,16 +164,23 @@ def play():
         if selected_alg >= 0:
             DROPDOWN_ALG.main = DROPDOWN_ALG.options[selected_alg]
 
-        mapa=[[1,0,0,0,0,0,0,0,0,0],
-              [1,0,0,0,0,0,0,0,0,0],
-              [1,0,0,0,0,0,0,0,0,0],
-              [0,0,0,6,0,0,0,0,0,0],
+        mapa=[[1,0,0,1,0,0,1,0,0,0],
+              [1,0,0,0,0,0,4,2,0,0],
+              [1,0,5,4,0,0,0,0,4,0],
+              [0,0,0,6,0,0,0,3,0,0],
               [1,0,0,0,0,0,0,0,0,0],
               [0,0,0,0,0,0,6,0,0,0],
+              [1,0,0,0,3,0,0,1,1,1],
+              [1,0,0,0,0,0,4,0,0,0],
               [1,0,0,0,0,0,0,0,0,0],
-              [1,0,0,0,0,0,0,0,0,0],
-              [1,0,0,0,0,0,0,0,0,0],
-              [1,0,0,0,0,0,0,0,0,0]]
+              [1,0,0,5,0,0,0,0,0,0]]
+        
+        #update the animation frames
+        current_time = pygame.time.get_ticks()
+        if current_time - last_update >= 1000 // frame_rate:
+            last_update = current_time
+            frame = (frame + 1) % len(animation_frames)
+            cell_frame = (cell_frame + 1) % len(cell_animation_frames)
         
         CELL_WIDTH = 620 // len(mapa[0])
         CELL_HEIGHT = 620 // len(mapa)
@@ -157,30 +189,33 @@ def play():
                 POS_X = x*CELL_WIDTH
                 POS_Y = y*CELL_HEIGHT
                 rect = pygame.Rect(POS_X+80, POS_Y+50, CELL_WIDTH, CELL_HEIGHT)
-                #pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
-                if cell==0: 
+                if cell == 0: #casilla libre
                     pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro blanco
-                elif cell == 1:
-                    pygame.draw.rect(SCREEN, (0, 0, 0), rect) # Dibuja el cuadro piedra
-                    #screen.blit(imagenP, (x * CELL_WIDTH, y * CELL_HEIGHT))
-                elif cell == 2:
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro queso
+
+                elif cell == 1: #muro
+                    pygame.draw.rect(SCREEN, (0, 0, 0), rect) # Dibuja el muro
+
+                elif cell == 2: #goku
+                    pygame.draw.rect(SCREEN, (255, 255, 255), rect)
                     #SCREEN.blit(RECT, (x * CELL_WIDTH, y * CELL_HEIGHT))
-                elif cell == 3:
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro del raton
+
+                elif cell == 3: #freezer
+                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Anima a freezer
+                    SCREEN.blit(animation_frames[frame], (POS_X+85, POS_Y+55))
+
+                elif cell == 4: #cell
+                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Anima a cell
+                    SCREEN.blit(cell_animation_frames[cell_frame], (POS_X+85, POS_Y+50))
+
+                elif cell == 5: #semilla
+                    pygame.draw.rect(SCREEN, (255, 255, 255), rect)
                     #SCREEN.blit(RECT, (x * CELL_WIDTH, y * CELL_HEIGHT))
-                elif cell == 4:
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro del raton
-                    #SCREEN.blit(RECT, (x * CELL_WIDTH, y * CELL_HEIGHT))
-                elif cell == 5:
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro del raton
-                    #SCREEN.blit(RECT, (x * CELL_WIDTH, y * CELL_HEIGHT))
-                elif cell == 6: 
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro blanco
+
+                elif cell == 6: #esfera
+                    pygame.draw.rect(SCREEN, (255, 255, 255), rect)
                     SCREEN.blit(ball, (POS_X+80, POS_Y+50))
                 
                 pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
-
 
         pygame.display.update()
 
