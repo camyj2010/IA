@@ -2,17 +2,17 @@
 from collections import deque
 import copy
 
-map=[
-[0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
-[0, 1, 0, 0, 1, 0, 0, 1, 1, 1],
-[0, 1, 1, 0, 3, 5, 1, 0, 2, 0],
-[1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
-[6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-[1, 0, 0, 4, 4, 1, 0, 1, 1, 5],
-[1, 1, 0, 0, 1, 1, 0, 1, 1, 0],
-[0, 1, 0, 0, 1, 1, 5, 0, 0, 0],
-[1, 1, 1, 6, 1, 1, 0, 1, 1, 1]]
+# map=[
+# [0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
+# [0, 1, 0, 0, 1, 0, 0, 1, 1, 1],
+# [0, 1, 1, 0, 3, 5, 1, 0, 2, 0],
+# [1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+# [6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+# [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+# [1, 0, 0, 4, 4, 1, 0, 1, 1, 5],
+# [1, 1, 0, 0, 1, 1, 0, 1, 1, 0],
+# [0, 1, 0, 0, 1, 1, 5, 0, 0, 0],
+# [1, 1, 1, 6, 1, 1, 0, 1, 1, 1]]
 
 class Node():
 
@@ -24,7 +24,7 @@ class Node():
         self.spheres = spheres
     
 
-class Breadth_Search():
+class Depth_Search():
 
     def __init__(self, map):
         self.map = map
@@ -104,7 +104,7 @@ class Breadth_Search():
 
 
     def avoid_cicle(self,node, new_position):
-        print(new_position, node.position)
+        #print(new_position, node.position)
         current = node
         while current is not None:
             if current.position == new_position:
@@ -176,27 +176,32 @@ class Breadth_Search():
             else:
                 expanded_nodes += 1
                 #print("Nodo expandido:", queue[0].position)
-                queue = self.expand_node(queue[0],map) + queue[1:]
+                queue = self.expand_node(queue[0],self.map) + queue[1:]
                 #print("Queue: ", queue)
 
         solution = queue[0]
-        print("Semillas:", queue[0].seeds)
+        #print("Semillas:", queue[0].seeds)
         path = []
+        maps = []
         while solution.parent is not None:
             path.append(solution.position)
+            maps.append(solution.map)
             solution = solution.parent
 
         path.append(solution.position)
         path.reverse()
 
+        maps.append(solution.map)
+        maps.reverse()
+
         for i in range(len(queue[0].map)):
             row = ''
             for j in range(len(queue[0].map)):
                 row += str(queue[0].map[i][j]) + ' '
-            print(row)
+            #print(row)
 
-        return path, expanded_nodes
+        return path, expanded_nodes, maps
 
-path, nodes = Breadth_Search(map).solve()
-print("Path: ", path)
-print("Nodos expandidos: ", nodes)
+# path, nodes = Depth_Search(map).solve()
+# print("Path: ", path)
+# print("Nodos expandidos: ", nodes)

@@ -2,17 +2,17 @@
 from collections import deque
 import copy
 
-map=[
-[0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
-[0, 1, 0, 0, 1, 0, 0, 0, 1, 1],
-[0, 1, 1, 0, 3, 5, 1, 0, 2, 0],
-[0, 1, 1, 1, 3, 1, 1, 1, 1, 0],
-[6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[1, 1, 4, 1, 1, 1, 1, 1, 1, 0],
-[1, 1, 0, 4, 4, 0, 0, 1, 1, 5],
-[1, 1, 0, 0, 1, 1, 0, 1, 1, 0],
-[0, 0, 0, 0, 1, 1, 5, 0, 0, 0],
-[1, 1, 1, 0, 1, 1, 6, 1, 1, 1]]
+# map=[
+# [0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
+# [0, 1, 0, 0, 1, 0, 0, 0, 1, 1],
+# [0, 1, 1, 0, 3, 5, 1, 0, 2, 0],
+# [0, 1, 1, 1, 3, 1, 1, 1, 1, 0],
+# [6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+# [1, 1, 4, 1, 1, 1, 1, 1, 1, 0],
+# [1, 1, 0, 4, 4, 0, 0, 1, 1, 5],
+# [1, 1, 0, 0, 1, 1, 0, 1, 1, 0],
+# [0, 0, 0, 0, 1, 1, 5, 0, 0, 0],
+# [1, 1, 1, 0, 1, 1, 6, 1, 1, 1]]
 
 class Node():
 
@@ -41,7 +41,7 @@ class Breadth_Search():
         y = node.position[1]
 
         #print(parent_x, parent_y)
-
+        # print(n_mapa)
         neighbors=[] 
 
         if(((x)-1>=0 and n_mapa[(x)-1][y]!=1) and self.check_parent_state(node, 'up') ):
@@ -169,18 +169,23 @@ class Breadth_Search():
             else:
                 expanded_nodes += 1
                 #print("Nodo expandido:", queue[0].position)
-                queue = queue[1:] + self.expand_node(queue[0],map)
+                queue = queue[1:] + self.expand_node(queue[0],self.map)
                 #print("Queue: ", queue)
 
         solution = queue[0]
         print("Semillas:", queue[0].seeds)
         path = []
+        maps = []
         while solution.parent is not None:
             path.append(solution.position)
+            maps.append(solution.map)
             solution = solution.parent
 
         path.append(solution.position)
         path.reverse()
+
+        maps.append(solution.map)
+        maps.reverse()
 
         for i in range(len(queue[0].map)):
             row = ''
@@ -188,8 +193,8 @@ class Breadth_Search():
                 row += str(queue[0].map[i][j]) + ' '
             print(row)
 
-        return path, expanded_nodes
+        return path, expanded_nodes, maps
 
-path, nodes = Breadth_Search(map).solve()
-print("Path: ", path)
-print("Nodos expandidos: ", nodes)
+# path, nodes = Breadth_Search(map).solve()
+# print("Path: ", path)
+# print("Nodos expandidos: ", nodes)
