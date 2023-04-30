@@ -1,4 +1,3 @@
-
 from collections import deque
 import copy
 
@@ -24,8 +23,7 @@ class Node():
         self.spheres = spheres
         self.cost = cost
     
-
-class Breadth_Search():
+class Uniform_Cost_Search():
 
     def __init__(self, map):
         self.map = map
@@ -143,8 +141,6 @@ class Breadth_Search():
 
         #print(child.position)
         return child
-
-
         
     def solve(self):
         
@@ -170,7 +166,9 @@ class Breadth_Search():
             else:
                 expanded_nodes += 1
                 #print("Nodo expandido:", queue[0].position)
+                #queue = priority_queue(queue[1:], self.expand_node(queue[0],self.map))
                 queue = queue[1:] + self.expand_node(queue[0],self.map)
+                queue.sort(key=lambda x: x.cost)
                 #print("Queue: ", queue)
 
         solution = queue[0]
@@ -195,7 +193,9 @@ class Breadth_Search():
             # print(row)
 
         return path, expanded_nodes, maps, queue[0].cost
+    
 
-# path, nodes = Breadth_Search(map).solve()
+# path, nodes, maps, cost = Uniform_Cost_Search(map).solve()
 # print("Path: ", path)
 # print("Nodos expandidos: ", nodes)
+# print("Costo: ", cost)

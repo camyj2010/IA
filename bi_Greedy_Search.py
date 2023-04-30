@@ -1,6 +1,6 @@
-
 from collections import deque
 import copy
+import math
 
 # map=[
 # [0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
@@ -16,17 +16,16 @@ import copy
 
 class Node():
 
-    def __init__(self, parent, position, map, seeds, spheres, cost=0):
+    def __init__(self, parent, position, map, seeds, spheres, cost, heuristic):
         self.parent = parent
         self.position = position
         self.map = map
         self.seeds = seeds
         self.spheres = spheres
         self.cost = cost
+        self.heuristic = heuristic
     
-
-class Breadth_Search():
-
+class Greedy_Search():
     def __init__(self, map):
         self.map = map
 
@@ -119,32 +118,31 @@ class Breadth_Search():
         if map[position_x][position_y] == 3: #freezer
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1)
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
+                
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+4)
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+4, heuristic((position_x,position_y), map))
 
         elif map[position_x][position_y] == 4: #cell
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1)
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+7)
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+7, heuristic((position_x,position_y), map))
 
         elif map[position_x][position_y] == 5: # seed
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+1)
+            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
 
         elif map[position_x][position_y] == 6: # sphere
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+1)
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+1, heuristic((position_x,position_y), map))
 
         else:
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+1)
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
 
         #print(child.position)
         return child
-
-
         
     def solve(self):
         
@@ -156,8 +154,8 @@ class Breadth_Search():
                 if self.map[i][j] == 2:
                     starting_position = (i, j)
 
-        # print('starting position', starting_position)
-        initial_node = Node(None, starting_position, self.map, 0, 0)
+        print('starting position', starting_position)
+        initial_node = Node(None, starting_position, self.map, 0, 0, 0, heuristic(starting_position, self.map))
         
         queue = [initial_node]
         finished = False
@@ -170,11 +168,13 @@ class Breadth_Search():
             else:
                 expanded_nodes += 1
                 #print("Nodo expandido:", queue[0].position)
+                #queue = priority_queue(queue[1:], self.expand_node(queue[0],self.map))
                 queue = queue[1:] + self.expand_node(queue[0],self.map)
+                queue.sort(key=lambda x: x.heuristic)
                 #print("Queue: ", queue)
 
         solution = queue[0]
-        # print("Semillas:", queue[0].seeds)
+        print("Semillas:", queue[0].seeds)
         path = []
         maps = []
         while solution.parent is not None:
@@ -195,7 +195,44 @@ class Breadth_Search():
             # print(row)
 
         return path, expanded_nodes, maps, queue[0].cost
+    
 
-# path, nodes = Breadth_Search(map).solve()
+
+
+
+def heuristic(position, map):
+    spheres = []
+    for i in range(len(map)):
+        for j in range(len(map)):
+            if map[i][j] == 6:
+                spheres.append((i,j))
+
+    if len(spheres) == 0:
+        return 0
+
+
+    distances = []
+    for sphere in spheres:
+        distances.append(euclidian_distance(position[0], position[1], sphere[0],sphere[1]))
+
+    if len(spheres) == 2:
+        sphere_distance = euclidian_distance(spheres[0][0], spheres[0][1], spheres[1][0], spheres[1][1])
+    else:
+        sphere_distance = 0
+
+    if len(distances) == 1:
+        total = sphere_distance + distances[0]
+    else:
+        total = sphere_distance + min(distances[0], distances[1])
+    # print(total)
+    return total
+
+def euclidian_distance(x1,y1,x2,y2):
+    return math.sqrt((x1-x2)**2 + (y1-y2)**2)
+
+
+
+# path, nodes, maps, cost = Uniform_Cost_Search(map).solve()
 # print("Path: ", path)
 # print("Nodos expandidos: ", nodes)
+# print("Costo: ", cost)

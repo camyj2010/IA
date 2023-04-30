@@ -10,7 +10,10 @@ import time
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from bni_Depth_Search import Depth_Search
-from bni_Breadth_Search import Breadth_Search, Node
+from bni_Breadth_Search import Breadth_Search
+from bni_Uniform_Cost_Search import Uniform_Cost_Search
+from bi_Greedy_Search import Greedy_Search
+from bi_A_Star_Search import A_Star_Search
 pygame.init()
 
 #Load resource
@@ -18,8 +21,15 @@ SCREEN = pygame.display.set_mode((1280,720))
 BG=pygame.image.load("source\imagenes\original.jpg")
 dragon=pygame.transform.scale(pygame.image.load("source\imagenes\dragon_resize.png"), (int(250), int(200)))
 ball=pygame.transform.scale(pygame.image.load("source\imagenes\dragon_ball.png"), (int(62), int(62)))
+
+sound_mixer = pygame.mixer.Channel(5)
 sound = pygame.mixer.Sound("source\sounds\menu.ogg")
 sound.set_volume(0.1)
+
+sound2 = pygame.mixer.music
+sound2.load("source\sounds\play.mp3")
+sound2.set_volume(0.1)
+
 width=1200
 height=700
 window_=pygame.display.set_mode((width,height))
@@ -42,14 +52,28 @@ for i in range(cell_animation_steps):
     cell_frame = cell_sprite_sheet.get_image(i, 40, 65, 1, (255, 255, 255))
     cell_animation_frames.append(cell_frame)
 
-# Goku
-goku = pygame.transform.scale(
-    pygame.image.load("source\imagenes\goku_tabien.jpeg"), (int(62), int(62))
+# Goku sprite
+goku_sprite_sheet_image = pygame.image.load("source/imagenes/goku.png")
+goku_sprite_sheet = spritesheet.SpriteSheet(goku_sprite_sheet_image)
+goku_animation_frames = []
+goku_animation_steps = 5
+for i in range(goku_animation_steps):
+    goku_frame = goku_sprite_sheet.get_image(i, 62, 62, 1, (255, 255, 255))
+    goku_animation_frames.append(goku_frame)
+
+# Obstaculos
+obstacle = pygame.transform.scale(
+    pygame.image.load("source\imagenes\obstacle.png"), (int(62), int(62))
 )
 
-# Goku
+# Semilla
 bean = pygame.transform.scale(
     pygame.image.load("source\imagenes\seed.png"), (int(62), int(62))
+)
+
+# Cloud
+cloud = pygame.transform.scale(
+    pygame.image.load("source\imagenes/nube.png"), (int(62), int(62))
 )
 
 def get_font(size, number): # Returns Press-Start-2P in the desired size
@@ -80,7 +104,8 @@ map=[
 [1, 1, 1, 0, 1, 1, 6, 1, 1, 1]]
 
 def play():
-    sound.stop()
+    # sound.stop()
+    # sound.play()
     #Animation variables
     frame = 0
     cell_frame = 0
@@ -133,10 +158,13 @@ def play():
 
     solution = []
     maps = []
+    traveled = []
 
     enlapsed_time = ""
     tree_depth = ""
     expanded_nodes = ""
+    total_cost = ""
+
     while True:
 
         PLAY_MOUSE_POS = pygame.mouse.get_pos()
@@ -155,6 +183,7 @@ def play():
         PLAY_TEXT9 = get_font(29,2).render(enlapsed_time, True, "White")
         PLAY_TEXT10 = get_font(29,2).render(expanded_nodes, True, "White")
         PLAY_TEXT11 = get_font(29,2).render(tree_depth, True, "White")
+        PLAY_TEXT12 = get_font(29,2).render(total_cost, True, "White")
         #RECT=pygame.draw.rect(window_,"White",(80,50,620,620) )
         #RECT_2=pygame.draw.rect(window_,"White",(750,50,350,530) )
 
@@ -169,6 +198,7 @@ def play():
         PLAY_RECT9 = PLAY_TEXT.get_rect(center=(1090, 532))
         PLAY_RECT10 = PLAY_TEXT.get_rect(center=(1090, 432))
         PLAY_RECT11 = PLAY_TEXT.get_rect(center=(1090, 482))
+        PLAY_RECT12 = PLAY_TEXT.get_rect(center=(1090, 582))
 
         SCREEN.blit(PLAY_TEXT, PLAY_RECT)
         SCREEN.blit(PLAY_TEXT2, PLAY_RECT2)
@@ -181,7 +211,8 @@ def play():
         SCREEN.blit(PLAY_TEXT9, PLAY_RECT9)
         SCREEN.blit(PLAY_TEXT10, PLAY_RECT10)
         SCREEN.blit(PLAY_TEXT11, PLAY_RECT11)
-        
+        SCREEN.blit(PLAY_TEXT12, PLAY_RECT12)
+
 
         PLAY_BACK = Button(pygame.transform.scale(pygame.image.load("source\imagenes\Play_Rect_4.png"), (int(200), int(150))), pos=(1090, 650), 
                             text_input="BACK", font=get_font(40,1), base_color="#FFFFFF", hovering_color="#87CEEB")
@@ -189,11 +220,17 @@ def play():
         PLAY_BACK.changeColor(PLAY_MOUSE_POS)
         PLAY_BACK.update(SCREEN)
 
-        PLAY_SOLVE = Button(pygame.transform.scale(pygame.image.load("source\imagenes\Play_Rect_3.png"), (int(200), int(150))), pos=(950, 310), 
+        PLAY_SOLVE = Button(pygame.transform.scale(pygame.image.load("source\imagenes\Play_Rect_3.png"), (int(200), int(150))), pos=(900, 310), 
                             text_input="SOLVE", font=get_font(40,1), base_color="#FFFFFF", hovering_color="#87CEEB")
 
         PLAY_SOLVE.changeColor(PLAY_MOUSE_POS)
         PLAY_SOLVE.update(SCREEN)
+
+        PLAY_RESTART = Button(pygame.transform.scale(pygame.image.load("source/imagenes/restart.png"), (int(180), int(170))), pos=(1100, 313), 
+                             text_input="", font=get_font(32,1), base_color="#FFFFFF", hovering_color="#87CEEB")
+
+        PLAY_RESTART.changeColor(PLAY_MOUSE_POS)
+        PLAY_RESTART.update(SCREEN)
         
         DROPDOWN_ALG.draw(SCREEN)
         DROPDOWN_SEARCH.draw(SCREEN)
@@ -210,11 +247,13 @@ def play():
                 if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
                     main_menu()
                 if PLAY_SOLVE.checkForInput(PLAY_MOUSE_POS):
-                    #print(map)
+                    sound_mixer.stop()
+                    sound2.play(start=10.5)
+                    #sound_mixer.play(sound2)
                     if DROPDOWN_ALG.main == "Amplitud" and count==0:
                         print('Amplitud')
                         start=time.time()
-                        path, nodes, maps = Breadth_Search(map).solve()
+                        path, nodes, maps, cost = Breadth_Search(map).solve()
                         print("Path: ", path)
                         print("Nodos expandidos: ", nodes)
                         finish=time.time()
@@ -224,13 +263,29 @@ def play():
                         enlapsed_time = str(round(total_time, 4)) + " s"
                         expanded_nodes = str(nodes)
                         tree_depth=str(len(path))
+                        total_cost=str(cost)
                         count += 1
 
                         solution += path
 
                     elif DROPDOWN_ALG.main == "Costo Uniforme" and count==0:
                         print('Costo Uniforme')
+                        start=time.time()
+                        path, nodes, maps, cost = Uniform_Cost_Search(map).solve()
+                        print("Path: ", path)
+                        print("Nodos expandidos: ", nodes)
+                        print("Costo", cost)
+                        finish=time.time()
+                        total_time = finish-start
+                        print(total_time)
+                        enlapsed_time = str(round(total_time, 4)) + " s"
+                        expanded_nodes = str(nodes)
+                        tree_depth=str(len(path))
+                        total_cost=str(cost)
                         count += 1
+
+                        solution += path
+                        
                     elif DROPDOWN_ALG.main == "Profundidad" and count==0:
                         print('Profundidad')
                         start=time.time()
@@ -249,10 +304,50 @@ def play():
                         
                     elif DROPDOWN_ALG.main == "A*" and count==0:
                         print('A*')
+                        start=time.time()
+                        path, nodes, maps, cost = A_Star_Search(map).solve()
+                        print("Path: ", path)
+                        print("Nodos expandidos: ", nodes)
+                        print("Costo", cost)
+                        finish=time.time()
+                        total_time = finish-start
+                        print(total_time)
+                        enlapsed_time = str(round(total_time, 4)) + " s"
+                        expanded_nodes = str(nodes)
+                        tree_depth=str(len(path))
+                        total_cost=str(cost)
                         count += 1
+
+                        solution += path
+
                     elif DROPDOWN_ALG.main == "Avara" and count==0:
                         print('Avara')
+                        start=time.time()
+                        path, nodes, maps, cost = Greedy_Search(map).solve()
+                        print("Path: ", path)
+                        print("Nodos expandidos: ", nodes)
+                        print("Costo", cost)
+                        finish=time.time()
+                        total_time = finish-start
+                        print(total_time)
+                        enlapsed_time = str(round(total_time, 4)) + " s"
+                        expanded_nodes = str(nodes)
+                        tree_depth=str(len(path))
+                        total_cost=str(cost)
                         count += 1
+
+                        solution += path
+                        
+                if PLAY_RESTART.checkForInput(PLAY_MOUSE_POS):
+                    
+                    solution = []
+                    traveled = []
+                    enlapsed_time = ""
+                    tree_depth = ""
+                    expanded_nodes = ""
+                    total_cost = ""
+                    count = 0
+                    map = read_map(DROPDOWN.main)
 
             
         selected_option = DROPDOWN.update(event_list)
@@ -271,7 +366,6 @@ def play():
 
         selected_alg = DROPDOWN_ALG.update(event_list)
         if selected_alg >= 0:
-            #print(selected_alg)
             count=0
             DROPDOWN_ALG.main = DROPDOWN_ALG.options[selected_alg]
        
@@ -294,15 +388,26 @@ def play():
             
             # print(map)
             # print()
-            time.sleep(0.2)
+            time.sleep(0.3)
 
+            for tile in traveled:
+                if map[tile[0]][tile[1]] == 0:
+                    map[tile[0]][tile[1]] = 7
+
+            traveled.append(pos)
             solution = solution[1:]
+
             maps = maps[1:]
-
-
-
         
-        
+        else:
+            if sound2.get_busy():
+                sound2.fadeout(1500)
+                #sound_mixer.play(sound)
+            elif sound_mixer.get_sound() == None:
+                sound_mixer.play(sound)
+            
+
+  
         #update the animation frames
         current_time = pygame.time.get_ticks()
         if current_time - last_update >= 1000 // frame_rate:
@@ -318,30 +423,37 @@ def play():
                 POS_Y = y*CELL_HEIGHT
                 rect = pygame.Rect(POS_X+80, POS_Y+50, CELL_WIDTH, CELL_HEIGHT)
                 if cell == 0: #casilla libre
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el cuadro blanco
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect) # Dibuja el cuadro blanco
 
                 elif cell == 1: #muro
-                    pygame.draw.rect(SCREEN, (0, 0, 0), rect) # Dibuja el muro
+                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Dibuja el muro
+                    SCREEN.blit(obstacle, (POS_X + 80, POS_Y + 50))
 
                 elif cell == 2: #goku
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect)
-                    SCREEN.blit(goku, (POS_X + 80, POS_Y + 50))
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect)
+                    SCREEN.blit(
+                        goku_animation_frames[cell_frame], (POS_X + 80, POS_Y + 50)
+                    )
 
                 elif cell == 3: #freezer
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Anima a freezer
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect) # Anima a freezer
                     SCREEN.blit(animation_frames[frame], (POS_X+85, POS_Y+55))
 
                 elif cell == 4: #cell
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect) # Anima a cell
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect) # Anima a cell
                     SCREEN.blit(cell_animation_frames[cell_frame], (POS_X+85, POS_Y+50))
 
                 elif cell == 5: #semilla
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect)
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect)
                     SCREEN.blit(bean, (POS_X + 80, POS_Y + 50))
 
                 elif cell == 6: #esfera
-                    pygame.draw.rect(SCREEN, (255, 255, 255), rect)
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect)
                     SCREEN.blit(ball, (POS_X+80, POS_Y+50))
+
+                elif cell == 7: #esfera
+                    pygame.draw.rect(SCREEN, (135, 206, 250), rect)
+                    SCREEN.blit(cloud, (POS_X+80, POS_Y+50))
                 
                 pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
 
@@ -352,7 +464,8 @@ def play():
         pygame.display.update()
 
 def credits():
-    sound.stop()
+    # sound.stop()
+    # sound.play()
     while True:
         OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
 
@@ -383,7 +496,8 @@ def credits():
         pygame.display.update()
 
 def maps():
-    sound.stop()
+    # sound.stop()
+    # sound.play()
 
     def upload_file():
         root = tk.Tk()
@@ -436,8 +550,8 @@ def maps():
         
 
 def main_menu():
-     
-     #sound.play()  
+     #sound.stop()
+     sound_mixer.play(sound)  
      while True:
       
         SCREEN.blit(BG, (0, 0)) 
