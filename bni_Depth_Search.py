@@ -1,21 +1,16 @@
-
-from collections import deque
 import copy
 
-# map=[
-# [0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
-# [0, 1, 0, 0, 1, 0, 0, 1, 1, 1],
-# [0, 1, 1, 0, 3, 5, 1, 0, 2, 0],
-# [1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
-# [6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-# [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-# [1, 0, 0, 4, 4, 1, 0, 1, 1, 5],
-# [1, 1, 0, 0, 1, 1, 0, 1, 1, 0],
-# [0, 1, 0, 0, 1, 1, 5, 0, 0, 0],
-# [1, 1, 1, 6, 1, 1, 0, 1, 1, 1]]
+COST = 1
+FR_COST = 3 + COST
+CL_COST = 6 + COST
+
 
 class Node():
-
+    '''
+    Clase que define un nodo teniendo en cuenta un padre, la posicion de goku, un mapa, 
+    las semillas y las esferas que tiene goku hasta el momento, adicional se tiene un atributo costo 
+    para los algoritmos que lo requieran. 
+    '''
     def __init__(self, parent, position, map, seeds, spheres, cost=0):
         self.parent = parent
         self.position = position
@@ -26,22 +21,28 @@ class Node():
     
 
 class Depth_Search():
-
+    '''
+    Clase que define el algoritmo de busqueda por profundidad.
+    '''
     def __init__(self, map):
         self.map = map
 
     def expand_node(self, node, mapa):
+        '''
+        Funcion que expande un nodo, es decir, que genera los nodos hijos de un nodo dado.
+        '''
         n_mapa=copy.deepcopy(mapa)
         child_nodes = self.node_neighbors(node, n_mapa)
         return child_nodes
 
     def node_neighbors(self,node,n_mapa):
-
-        #print ("hola neig")
+        '''
+        Verifica si un nodo se puede mover hacia arriba, abajo, izquierda o derecha, y
+        si es posible, crea un nodo hijo con la posicion a la que se movio, adicionalmente
+        se verifica que el nodo no haya sido visitado anteriormente, mirando su padre.
+        '''
         x = node.position[0]
         y = node.position[1]
-
-        #print(parent_x, parent_y)
 
         neighbors=[] 
 
@@ -61,11 +62,15 @@ class Depth_Search():
             child = self.state(node, x, y-1)
             neighbors.append(child)
             
-        #print(neighbors)
         return neighbors
 
 
     def check_parent_state(self, node, direction):
+        '''
+        Returna True o False dependiendo si el nodo se puede mover hacia la dirección dada.
+        Se puede mover a una posición siempre y cuando no sea la posición de su padre a menos
+        que tenga diferente cantidad de semillas o esferas.
+        '''
         if node.parent == None:
             return True
         
@@ -105,7 +110,10 @@ class Depth_Search():
 
 
     def avoid_cicle(self,node, new_position):
-        #print(new_position, node.position)
+        '''
+        Verifica si el nodo se puede mover a la posición dada, es decir, si no se ha visitado
+        anteriormente en esa rama.
+        '''
         current = node
         while current is not None:
             if current.position == new_position:
@@ -116,9 +124,11 @@ class Depth_Search():
 
     
 
-
     def state(self, node, position_x, position_y):
-
+        '''
+        Funcion que crea un nodo hijo a partir de un nodo dado, la posición a la que se movio, el numero de
+        semillas y esferas. Adicional, actualiza el mapa, dependiendo de las condiciones y añade el costo
+        '''
         map = copy.deepcopy(node.map)
         child = None
 
@@ -126,83 +136,83 @@ class Depth_Search():
         if map[position_x][position_y] == 3: #freezer
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1)
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+COST)
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+4)
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+FR_COST)
 
         elif map[position_x][position_y] == 4: #cell
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1)
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+COST)
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+7)
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+CL_COST)
 
         elif map[position_x][position_y] == 5: # seed
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+1)
+            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+COST)
 
         elif map[position_x][position_y] == 6: # sphere
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+1)
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+COST)
 
         else:
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+1)
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+COST)
 
-        #print(child.position)
         return child
 
 
         
     def solve(self):
-        
+        '''
+        Funcion que resuelve el problema de busqueda utilizando el algoritmo de busqueda por amplitud.
+        '''
+   
         starting_position = None
         expanded_nodes = 0
 
+        # Se recorre el mapa para encontrar la posicion inicial
         for i in range(len(self.map)):
             for j in range(len(self.map)):
                 if self.map[i][j] == 2:
                     starting_position = (i, j)
 
-        print('starting position', starting_position)
+        # Se crea el nodo inicial y se añade a la cola
         initial_node = Node(None, starting_position, self.map, 0, 0)
         
         queue = [initial_node]
         finished = False
 
+        # Se expanden nodos hasta que se encuentre la solucion
         while not finished:
-            
-            #current_node_position = queue[0].position
+            # Se revisa si el primer nodo de la cola es la solucion
             if queue[0].spheres == 2:
                 finished = True
             else:
                 expanded_nodes += 1
-                #print("Nodo expandido:", queue[0].position)
-                queue = self.expand_node(queue[0],self.map) + queue[1:]
-                #print("Queue: ", queue)
+                # Implementacion de la pila para la busqueda por profundidad
+                # Se expande el primer nodo de la pila y se añaden sus hijos en el tope
 
+                # queue[1:] -> pila sin el primer elemento
+                queue = self.expand_node(queue[0],self.map) + queue[1:]
+                
+        # Se reconstruye el camino de la solucion
         solution = queue[0]
-        #print("Semillas:", queue[0].seeds)
-        path = []
-        maps = []
+        
+        path = []   # camino recorrido
+        maps = []   # los mapas de cada nodo
+
+        # Se recorren todos los padres del nodo solucion y se añaden al camino y los mapas
         while solution.parent is not None:
             path.append(solution.position)
             maps.append(solution.map)
             solution = solution.parent
 
         path.append(solution.position)
-        path.reverse()
+        path.reverse()  # Se invierte el camino para que quede en el orden correcto
 
         maps.append(solution.map)
-        maps.reverse()
+        maps.reverse()  # Se invierte el camino para que quede en el orden correcto    
 
-        for i in range(len(queue[0].map)):
-            row = ''
-            for j in range(len(queue[0].map)):
-                row += str(queue[0].map[i][j]) + ' '
-            #print(row)
-
+        # Se retorna el camino, el numero de nodos expandidos, los mapas de los nodos solucion y el costo total
         return path, expanded_nodes, maps, queue[0].cost
 
-# path, nodes = Depth_Search(map).solve()
-# print("Path: ", path)
-# print("Nodos expandidos: ", nodes)

@@ -21,6 +21,7 @@ SCREEN = pygame.display.set_mode((1280,720))
 BG=pygame.image.load("source\imagenes\original.jpg")
 dragon=pygame.transform.scale(pygame.image.load("source\imagenes\dragon_resize.png"), (int(250), int(200)))
 ball=pygame.transform.scale(pygame.image.load("source\imagenes\dragon_ball.png"), (int(62), int(62)))
+goku_tabien=pygame.transform.scale(pygame.image.load("source\imagenes\goku_tabien.jpg"), (int(380), int(253)))
 
 sound_mixer = pygame.mixer.Channel(5)
 sound = pygame.mixer.Sound("source\sounds\menu.ogg")
@@ -30,8 +31,8 @@ sound2 = pygame.mixer.music
 sound2.load("source\sounds\play.mp3")
 sound2.set_volume(0.1)
 
-width=1200
-height=700
+width=1280
+height=720
 window_=pygame.display.set_mode((width,height))
 
 #Frieza sprite
@@ -81,6 +82,12 @@ def get_font(size, number): # Returns Press-Start-2P in the desired size
         return pygame.font.Font("source\saiyan-sans_font\Saiyan-Sans.ttf", size)
     if(number==2):
         return pygame.font.Font("source\saiyan-sans_font\ChicagoFLF.ttf", size)
+
+def draw_text(x, y, string, col, size, window, number=1):
+    font = get_font(size,number)
+    text = font.render(string, True, col)
+    textbox = text.get_rect(center=(x,y))
+    window.blit(text, textbox)
 
 def read_map(file_name):
     map = []
@@ -471,6 +478,7 @@ def play():
         
         pygame.display.update()
 
+
 def credits():
     # sound.stop()
     # sound.play()
@@ -479,13 +487,39 @@ def credits():
 
         SCREEN.blit(BG, (0, 0)) 
 
-        CREDIT_TEXT = get_font(150,1).render("CREDITS.", True, "White")
+        draw_text(642, 118, "CREDITS", "Black", 150, SCREEN)
+        draw_text(642, 122, "CREDITS", "Black", 150, SCREEN)
+        draw_text(638, 118, "CREDITS", "Black", 150, SCREEN)
+        draw_text(638, 122, "CREDITS", "Black", 150, SCREEN)
+        CREDIT_TEXT = get_font(150,1).render("CREDITS", True, "White")
         OPTIONS_RECT = CREDIT_TEXT.get_rect(center=(640, 120))
         SCREEN.blit(CREDIT_TEXT, OPTIONS_RECT)
 
-        NAMES_TEXT = get_font(80,1).render("nombres", True, "White")
-        NAMES_RECT = NAMES_TEXT.get_rect(center=(645, 300))
-        SCREEN.blit(NAMES_TEXT, NAMES_RECT)
+        SCREEN.blit(goku_tabien, (900,0))
+
+        draw_text(642, 298, "Valery Molina Burgos", "Black", 80, SCREEN)
+        draw_text(642, 302, "Valery Molina Burgos", "Black", 80, SCREEN)
+        draw_text(638, 298, "Valery Molina Burgos", "Black", 80, SCREEN)
+        draw_text(638, 302, "Valery Molina Burgos", "Black", 80, SCREEN)
+        NAMES_TEXT1 = get_font(80,1).render("Valery Molina Burgos", True, "White")
+        NAMES_RECT1 = NAMES_TEXT1.get_rect(center=(640, 300))
+        SCREEN.blit(NAMES_TEXT1, NAMES_RECT1)
+
+        draw_text(642, 378, "Maria Camila Jaramilo Andrade", "Black", 80, SCREEN)
+        draw_text(642, 382, "Maria Camila Jaramilo Andrade", "Black", 80, SCREEN)
+        draw_text(638, 378, "Maria Camila Jaramilo Andrade", "Black", 80, SCREEN)
+        draw_text(638, 382, "Maria Camila Jaramilo Andrade", "Black", 80, SCREEN)
+        NAMES_TEXT2 = get_font(80,1).render("Maria Camila Jaramilo Andrade", True, "White")
+        NAMES_RECT2 = NAMES_TEXT2.get_rect(center=(640, 380))
+        SCREEN.blit(NAMES_TEXT2, NAMES_RECT2)
+
+        draw_text(642, 458, "Juan Esteban Betancourt Narvaez", "Black", 80, SCREEN)
+        draw_text(642, 462, "Juan Esteban Betancourt Narvaez", "Black", 80, SCREEN)
+        draw_text(638, 462, "Juan Esteban Betancourt Narvaez", "Black", 80, SCREEN)
+        draw_text(638, 458, "Juan Esteban Betancourt Narvaez", "Black", 80, SCREEN)
+        NAMES_TEXT3 = get_font(80,1).render("Juan Esteban Betancourt Narvaez", True, "White")
+        NAMES_RECT3 = NAMES_TEXT3.get_rect(center=(640, 460))
+        SCREEN.blit(NAMES_TEXT3, NAMES_RECT3)
 
         OPTIONS_BACK = Button(image=pygame.image.load("source\imagenes\Play_Rect_4.png"), pos=(900, 600), 
                             text_input="BACK", font=get_font(60,1), base_color="#FFFFFF", hovering_color="#87CEEB")
@@ -510,14 +544,13 @@ def maps():
     def upload_file():
         root = tk.Tk()
         root.withdraw()
-        file_path = filedialog.askopenfilename()
-        print(f"File path: {file_path}")
+        file_paths = filedialog.askopenfilenames()
         messagebox.showinfo("","upload successful")
 
-
-        with open("source/map/" + os.path.basename(file_path), "wb") as f:
-            with open(file_path, "rb") as input_file:
-                f.write(input_file.read())
+        for file_path in file_paths:
+            with open("source/map/" + os.path.basename(file_path), "wb") as f:
+                with open(file_path, "rb") as input_file:
+                    f.write(input_file.read())
 
     
 
@@ -526,6 +559,10 @@ def maps():
 
         SCREEN.blit(BG, (0, 0)) 
 
+        draw_text(642, 118, "UPLOAD YOUR MAP", "Black", 150, SCREEN)
+        draw_text(642, 122, "UPLOAD YOUR MAP", "Black", 150, SCREEN)
+        draw_text(638, 118, "UPLOAD YOUR MAP", "Black", 150, SCREEN)
+        draw_text(638, 122, "UPLOAD YOUR MAP", "Black", 150, SCREEN)
         UPLOAD_TEXT = get_font(150,1).render("UPLOAD YOUR MAP", True, "White")
         OPTIONS_RECT = UPLOAD_TEXT.get_rect(center=(640, 120))
         SCREEN.blit(UPLOAD_TEXT, OPTIONS_RECT)
@@ -566,10 +603,15 @@ def main_menu():
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-        MENU_TEXT = get_font(150,1).render("Dragon Ball Maze", True, "#FFFFFF")
-        
-        
+        draw_text(695, 125, "Dragon Ball Maze", "Black", 152, SCREEN)
+        draw_text(705, 115, "Dragon Ball Maze", "Black", 152, SCREEN)
+        draw_text(695, 115, "Dragon Ball Maze", "Black", 152, SCREEN)
+        draw_text(705, 125, "Dragon Ball Maze", "Black", 152, SCREEN)
+        MENU_TEXT = get_font(150,1).render("Dragon Ball Maze", True, "Red")
         MENU_RECT = MENU_TEXT.get_rect(center=(700, 120))
+        SCREEN.blit(MENU_TEXT, MENU_RECT)
+
+        draw_text(376, 120, "Dragon", "Yellow", 150, SCREEN)
 
         PLAY_BUTTON = Button(image=pygame.image.load("source\imagenes\Play_Rect_3.png"), pos=(250, 600), 
                             text_input="PLAY", font=get_font(60,1), base_color="#FFFFFF", hovering_color="#87CEEB")
@@ -581,7 +623,7 @@ def main_menu():
                             text_input="MAP", font=get_font(60,1), base_color="#FFFFFF", hovering_color="#87CEEB")
         
         
-        SCREEN.blit(MENU_TEXT, MENU_RECT)
+
         SCREEN.blit(dragon, (5,30))
 
         for button in [PLAY_BUTTON]:

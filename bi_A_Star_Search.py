@@ -1,21 +1,16 @@
-from collections import deque
 import copy
 import math
 
-# map=[
-# [0, 5, 3, 1, 1, 1, 1, 1, 1, 1],
-# [0, 1, 0, 0, 1, 0, 0, 0, 1, 1],
-# [0, 1, 1, 0, 3, 5, 1, 0, 2, 0],
-# [0, 1, 1, 1, 3, 1, 1, 1, 1, 0],
-# [6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-# [1, 1, 4, 1, 1, 1, 1, 1, 1, 0],
-# [1, 1, 0, 4, 4, 0, 0, 1, 1, 5],
-# [1, 1, 0, 0, 1, 1, 0, 1, 1, 0],
-# [0, 0, 0, 0, 1, 1, 5, 0, 0, 0],
-# [1, 1, 1, 0, 1, 1, 6, 1, 1, 1]]
+COST = 1
+FR_COST = 3 + COST
+CL_COST = 6 + COST
 
 class Node():
-
+    '''
+    Clase que define un nodo teniendo en cuenta un padre, la posicion de goku, un mapa, 
+    las semillas y las esferas que tiene goku hasta el momento, adicional se tiene un atributo costo 
+    y uno de heuristica. 
+    '''
     def __init__(self, parent, position, map, seeds, spheres, cost, heuristic):
         self.parent = parent
         self.position = position
@@ -26,6 +21,9 @@ class Node():
         self.heuristic = heuristic
     
 class A_Star_Search():
+    '''
+    Clase que define el algoritmo de busqueda de A estrella.
+    '''
     def __init__(self, map):
         self.map = map
 
@@ -36,12 +34,9 @@ class A_Star_Search():
 
     def node_neighbors(self,node,n_mapa):
 
-        #print ("hola neig")
         x = node.position[0]
         y = node.position[1]
 
-        #print(parent_x, parent_y)
-        # print(n_mapa)
         neighbors=[] 
 
         if(((x)-1>=0 and n_mapa[(x)-1][y]!=1) and self.check_parent_state(node, 'up') ):
@@ -60,11 +55,15 @@ class A_Star_Search():
             child = self.state(node, x, y-1)
             neighbors.append(child)
             
-        #print(neighbors)
         return neighbors
 
 
     def check_parent_state(self, node, direction):
+        '''
+        Returna True o False dependiendo si el nodo se puede mover hacia la dirección dada.
+        Se puede mover a una posición siempre y cuando no sea la posición de su padre a menos
+        que tenga diferente cantidad de semillas o esferas.
+        '''
         if node.parent == None:
             return True
         
@@ -110,7 +109,10 @@ class A_Star_Search():
 
         
     def state(self, node, position_x, position_y):
-
+        '''
+        Funcion que crea un nodo hijo a partir de un nodo dado, la posición a la que se movio, el numero de
+        semillas y esferas. Adicional, actualiza el mapa, dependiendo de las condiciones y añade el costo
+        '''
         map = copy.deepcopy(node.map)
         child = None
 
@@ -118,121 +120,125 @@ class A_Star_Search():
         if map[position_x][position_y] == 3: #freezer
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+COST, heuristic((position_x,position_y), map))
                 
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+4, heuristic((position_x,position_y), map))
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+FR_COST, heuristic((position_x,position_y), map))
 
         elif map[position_x][position_y] == 4: #cell
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+COST, heuristic((position_x,position_y), map))
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+7, heuristic((position_x,position_y), map))
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+CL_COST, heuristic((position_x,position_y), map))
 
         elif map[position_x][position_y] == 5: # seed
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
+            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+COST, heuristic((position_x,position_y), map))
 
         elif map[position_x][position_y] == 6: # sphere
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+1, heuristic((position_x,position_y), map))
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+COST, heuristic((position_x,position_y), map))
 
         else:
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+1, heuristic((position_x,position_y), map))
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+COST, heuristic((position_x,position_y), map))
 
-        #print(child.position)
         return child
         
     def solve(self):
-        
+        '''
+        Funcion que resuelve el problema de busqueda utilizando el algoritmo de busqueda por amplitud.
+        '''
+                
         starting_position = None
         expanded_nodes = 0
 
+        # Se recorre el mapa para encontrar la posicion inicial
         for i in range(len(self.map)):
             for j in range(len(self.map)):
                 if self.map[i][j] == 2:
                     starting_position = (i, j)
 
-        # print('starting position', starting_position)
+        # Se crea el nodo inicial y se añade a la cola
         initial_node = Node(None, starting_position, self.map, 0, 0, 0, heuristic(starting_position, self.map))
-        
         queue = [initial_node]
         finished = False
 
+        # Se expanden nodos hasta que se encuentre la solucion
         while not finished:
-            
-            #current_node_position = queue[0].position
+            # Se revisa si el primer nodo de la cola es la solucion
             if queue[0].spheres == 2:
                 finished = True
             else:
                 expanded_nodes += 1
-                #print("Nodo expandido:", queue[0].position)
-                #queue = priority_queue(queue[1:], self.expand_node(queue[0],self.map))
+                # Implementacion de la cola de prioridad para la busqueda por costo uniforme
+                # Se expande el primer nodo de la cola y se añaden sus hijos al final de la cola
+                # Luego se ordena la cola considerando la suma del costo y la heuristica
+
+                # queue[1:] -> todos los nodos menos el primero
                 queue = queue[1:] + self.expand_node(queue[0],self.map)
                 queue.sort(key=lambda x: x.heuristic + x.cost)
-                #print("Queue: ", queue)
 
+        # Se reconstruye el camino de la solucion
         solution = queue[0]
-        # print("Semillas:", queue[0].seeds)
-        path = []
-        maps = []
+        path = []   # camino recorrido
+        maps = []   # los mapas de cada nodo
+
+        # Se recorren todos los padres del nodo solucion y se añaden al camino y los mapas
         while solution.parent is not None:
             path.append(solution.position)
             maps.append(solution.map)
             solution = solution.parent
 
         path.append(solution.position)
-        path.reverse()
+        path.reverse()  # Se invierte el camino para que quede en el orden correcto
 
         maps.append(solution.map)
-        maps.reverse()
+        maps.reverse()  # Se invierte el camino para que quede en el orden correcto
 
-        for i in range(len(queue[0].map)):
-            row = ''
-            for j in range(len(queue[0].map)):
-                row += str(queue[0].map[i][j]) + ' '
-            # print(row)
-
+        # Se retorna el camino, el numero de nodos expandidos, los mapas de los nodos solucion y el costo total
         return path, expanded_nodes, maps, queue[0].cost
     
 
-
-
-
 def heuristic(position, map):
+    '''
+    Funcion que calcula la heuristica de un nodo dado, la heuristica es la suma de las distancias euclidianas
+    entre la posicion del nodo a la esfera mas cercana y la distancia entre esferas
+    '''
+
+    # Localiza las esferas en el mapa
     spheres = []
     for i in range(len(map)):
         for j in range(len(map)):
             if map[i][j] == 6:
                 spheres.append((i,j))
 
+    # Si no hay esferas la heuristica es 0
     if len(spheres) == 0:
         return 0
 
-
+    # Calcula la distancia entre el nodo y cada esfera
     distances = []
     for sphere in spheres:
         distances.append(euclidian_distance(position[0], position[1], sphere[0],sphere[1]))
 
+    # Calcula la distancia entre esferas
     if len(spheres) == 2:
         sphere_distance = euclidian_distance(spheres[0][0], spheres[0][1], spheres[1][0], spheres[1][1])
     else:
         sphere_distance = 0
 
+    # Calcula la heuristica
     if len(distances) == 1:
         total = sphere_distance + distances[0]
     else:
         total = sphere_distance + min(distances[0], distances[1])
-    # print(total)
+  
     return total
 
+
 def euclidian_distance(x1,y1,x2,y2):
+    '''
+    Funcion que calcula la distancia euclidiana entre dos puntos
+    '''
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
-
-
-
-# path, nodes, maps, cost = A_Star_Search(map).solve()
-# print("Path: ", path)
-# print("Nodos expandidos: ", nodes)
-# print("Costo: ", cost)
