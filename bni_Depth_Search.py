@@ -16,12 +16,13 @@ import copy
 
 class Node():
 
-    def __init__(self, parent, position, map, seeds, spheres):
+    def __init__(self, parent, position, map, seeds, spheres, cost=0):
         self.parent = parent
         self.position = position
         self.map = map
         self.seeds = seeds
         self.spheres = spheres
+        self.cost = cost
     
 
 class Depth_Search():
@@ -125,27 +126,27 @@ class Depth_Search():
         if map[position_x][position_y] == 3: #freezer
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres)
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1)
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres)
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+4)
 
         elif map[position_x][position_y] == 4: #cell
             if(node.seeds>0):
                 map[position_x][position_y] = 0
-                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres)
+                child = Node(node, (position_x, position_y), map, node.seeds-1, node.spheres, node.cost+1)
             else:
-                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres)
+                child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+7)
 
         elif map[position_x][position_y] == 5: # seed
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres)
+            child = Node(node, (position_x, position_y), map, node.seeds+1, node.spheres, node.cost+1)
 
         elif map[position_x][position_y] == 6: # sphere
             map[position_x][position_y] = 0
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1)
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres+1, node.cost+1)
 
         else:
-            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres)
+            child = Node(node, (position_x, position_y), map, node.seeds, node.spheres, node.cost+1)
 
         #print(child.position)
         return child
@@ -200,7 +201,7 @@ class Depth_Search():
                 row += str(queue[0].map[i][j]) + ' '
             #print(row)
 
-        return path, expanded_nodes, maps
+        return path, expanded_nodes, maps, queue[0].cost
 
 # path, nodes = Depth_Search(map).solve()
 # print("Path: ", path)

@@ -164,6 +164,7 @@ def play():
     tree_depth = ""
     expanded_nodes = ""
     total_cost = ""
+    count = 0
 
     while True:
 
@@ -247,8 +248,7 @@ def play():
                 if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
                     main_menu()
                 if PLAY_SOLVE.checkForInput(PLAY_MOUSE_POS):
-                    sound_mixer.stop()
-                    sound2.play(start=10.5)
+                    
                     #sound_mixer.play(sound2)
                     if DROPDOWN_ALG.main == "Amplitud" and count==0:
                         print('Amplitud')
@@ -289,7 +289,7 @@ def play():
                     elif DROPDOWN_ALG.main == "Profundidad" and count==0:
                         print('Profundidad')
                         start=time.time()
-                        path, nodes, maps = Depth_Search(map).solve()
+                        path, nodes, maps, cost = Depth_Search(map).solve()
                         print("Path: ", path)
                         print("Nodos expandidos: ", nodes)
                         finish=time.time()
@@ -298,6 +298,7 @@ def play():
                         enlapsed_time = str(round(total_time, 4)) + " s"
                         expanded_nodes = str(nodes)
                         tree_depth=str(len(path))
+                        total_cost=str(cost)
                         count += 1
 
                         solution += path
@@ -338,22 +339,29 @@ def play():
 
                         solution += path
                         
+                    if len(solution) > 0 and count == 1:
+                        count += 1
+                        sound_mixer.stop()
+                        sound2.play(start=10.1)
+
                 if PLAY_RESTART.checkForInput(PLAY_MOUSE_POS):
                     
-                    solution = []
-                    traveled = []
-                    enlapsed_time = ""
-                    tree_depth = ""
-                    expanded_nodes = ""
-                    total_cost = ""
-                    count = 0
-                    map = read_map(DROPDOWN.main)
+                    if DROPDOWN.main != 'Select Map':
+                        solution = []
+                        traveled = []
+                        enlapsed_time = ""
+                        tree_depth = ""
+                        expanded_nodes = ""
+                        total_cost = ""
+                        count = 0
+                        map = read_map(DROPDOWN.main)
 
             
         selected_option = DROPDOWN.update(event_list)
         if selected_option >= 0:
             DROPDOWN.main = DROPDOWN.options[selected_option]
             map = read_map(DROPDOWN.main)
+            count = 0
 
         selected_search = DROPDOWN_SEARCH.update(event_list)
         if selected_search >= 0:

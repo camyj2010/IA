@@ -77,35 +77,41 @@ class Greedy_Search():
         y = node.position[1]
 
         if direction=='up':
-            if parent_x == x-1:
-                if parent_seeds == node.seeds and parent_spheres == node.spheres:
-                    return False
-                else:
-                    return True
-            
+            if parent_seeds != node.seeds or parent_spheres != node.spheres:
+                return True
+
+            return self.avoid_cicle(node, ((x-1),y))
         
         if direction=='down':
-            if parent_x == x+1:
-                if parent_seeds == node.seeds and parent_spheres == node.spheres:
-                    return False
-                else:
-                    return True
+            if parent_seeds != node.seeds or parent_spheres != node.spheres:
+                return True
+
+            return self.avoid_cicle(node, ((x+1),y))
         
         if direction=='left':
-            if parent_y == y-1:
-                if parent_seeds == node.seeds and parent_spheres == node.spheres:
-                    return False
-                else:
-                    return True
+            if parent_seeds != node.seeds or parent_spheres != node.spheres:
+                return True
+
+            return self.avoid_cicle(node, (x,(y-1)))
 
         if direction=='right':
-            if parent_y == y+1:
-                if parent_seeds == node.seeds and parent_spheres == node.spheres:
-                    return False
-                else:
-                    return True
+            if parent_seeds != node.seeds or parent_spheres != node.spheres:
+                return True
+
+            return self.avoid_cicle(node, (x,(y+1)))
                 
         return True
+
+
+    def avoid_cicle(self,node, new_position):
+        #print(new_position, node.position)
+        current = node
+        while current is not None:
+            if current.position == new_position:
+                return False
+            current = current.parent
+        else:
+            return True
 
 
         
